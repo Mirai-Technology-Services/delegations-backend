@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@elysiajs/cors": "^1.1.0",
+    "@elysiajs/jwt": "^1.1.0",
     "@elysiajs/swagger": "^1.1.0",
     "drizzle-orm": "^0.32.0",
     "elysia": "latest",

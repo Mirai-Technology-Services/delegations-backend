@@ -15,4 +15,10 @@ export const tripsRoutes = new Elysia({ prefix: "/trips" })
       status: 201,
       body: insertedTrip,
     };
+  })
+  .get("/start-form", () => {
+    return {
+      delegation_id: "test",
+      start_time: "2021-01-01T00:00:00Z",
+    };
   });
