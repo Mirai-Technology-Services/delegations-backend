@@ -1,11 +1,12 @@
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
+import { env } from "../env";
 
 const client = postgres({
-  host: "192.168.88.200",
-  port: 5432,
-  username: "postgres",
-  database: "delegations",
+  host: env.dbHost,
+  port: env.dbPort,
+  username: env.dbUsername,
+  database: env.dbDatabase,
 });
 
 const db = drizzle(client);
