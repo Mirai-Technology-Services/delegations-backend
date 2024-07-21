@@ -10,7 +10,6 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
   .use(jwt({ secret: secretKey }))
   .post("/register", async (ctx) => {
     const { first_name, last_name, email, password } = await ctx.request.json();
-    console.log(first_name, last_name, email, password);
 
     const hashedPassword = await Bun.password.hash(password);
 
@@ -18,16 +17,16 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       .insert(users)
       .values({
         first_name,
-        email,
         last_name,
+        email,
         password: hashedPassword,
       })
       .returning();
 
     return { id: newUser.user_id, email: newUser.email };
   })
-  .post("/login", async (ctx) => {
-    const { email, password } = await ctx.request.json();
+  .post("/login", async ({ jwt, cookie, request }) => {
+    const { email, password } = await request.json();
 
     const [user] = await db.select().from(users).where(eq(users.email, email));
 
@@ -41,9 +40,9 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       return { status: 401, body: "Invalid password" };
     }
 
-    const token = await ctx.jwt.sign({ id: user.user_id, email: user.email });
+    const token = await jwt.sign({ id: user.user_id, email: user.email });
 
-    ctx.cookie.auth.set({
+    cookie.auth.set({
       value: token,
       httpOnly: true,
       maxAge: 7 * 86400,

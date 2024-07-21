@@ -51,6 +51,9 @@ export const car_trips = pgTable("car_trips", {
   car_id: integer("car_id")
     .references(() => cars.car_id)
     .notNull(),
+  user_id: integer("user_id")
+    .notNull()
+    .references(() => users.user_id),
   remarks: varchar("remarks", { length: 255 }),
   last_updated: date("last_updated").defaultNow().notNull(),
 });

@@ -4,4 +4,5 @@ export const env = {
   dbUsername: process.env.DB_USERNAME,
   dbDatabase: process.env.DB_DATABASE,
   port: parseInt(process.env.PORT || "3000", 10),
+  jwtSecret: process.env.JWT_SECRET || "secret",
 };
