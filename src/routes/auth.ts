@@ -3,11 +3,10 @@ import Elysia from "elysia";
 import { users } from "../db/schema";
 import db from "../db/db";
 import { eq } from "drizzle-orm";
-
-const secretKey = "Fischl von Luftschloss Narfidort"; // Replace with your secret key
+import { env } from "../env";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
-  .use(jwt({ secret: secretKey }))
+  .use(jwt({ secret: env.jwtSecret }))
   .post("/register", async (ctx) => {
     const { first_name, last_name, email, password } = await ctx.request.json();
 
