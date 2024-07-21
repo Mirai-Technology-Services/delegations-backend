@@ -11,6 +11,12 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
   .post("/register", async (ctx) => {
     const { first_name, last_name, email, password } = await ctx.request.json();
 
+    const user = await db.select().from(users).where(eq(users.email, email));
+
+    if (user.length) {
+      return { status: 409, body: "User already exists" };
+    }
+
     const hashedPassword = await Bun.password.hash(password);
 
     const [newUser] = await db
