@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 import db from "../db/db";
-import { car_trips } from "../db/schema";
+import { trips } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { TokenData, authenticateJWT, jwtMiddleware } from "../middlewares/auth";
 
@@ -10,21 +10,19 @@ export const tripsRoutes = new Elysia({ prefix: "/trips" })
   .guard(jwtMiddleware, (app) =>
     app
       .get("/", async ({ store: { user } }) => {
-        const trips = await db
+        const dbTrips = await db
           .select()
-          .from(car_trips)
-          .where(eq(car_trips.user_id, user.id));
+          .from(trips)
+          .where(eq(trips.user_id, user.id));
 
-        return { body: trips };
+        return { body: dbTrips };
       })
-      .post("/", async ({ store, request }) => {
-        const user = store.user;
-
+      .post("/", async ({ store: { user }, request }) => {
         const newTrip = await request.json();
         newTrip.user_id = user.id;
 
         const [insertedTrip] = await db
-          .insert(car_trips)
+          .insert(trips)
           .values(newTrip)
           .returning();
 
@@ -32,10 +30,9 @@ export const tripsRoutes = new Elysia({ prefix: "/trips" })
           body: insertedTrip,
         };
       })
-      .get("/start-form", () => {
+      .get("/start-form", ({ store: { user } }) => {
         return {
-          delegation_id: "test",
-          start_time: "2021-01-01T00:00:00Z",
+          user,
         };
       }),
   )
