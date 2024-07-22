@@ -1,5 +1,5 @@
 import jwt from "@elysiajs/jwt";
-import Elysia from "elysia";
+import Elysia, { error } from "elysia";
 import { users } from "../db/schema";
 import db from "../db/db";
 import { eq } from "drizzle-orm";
@@ -13,7 +13,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     const user = await db.select().from(users).where(eq(users.email, email));
 
     if (user.length) {
-      return { status: 409, body: "User already exists" };
+      return error(409, { message: "User already exists" });
     }
 
     const hashedPassword = await Bun.password.hash(password);
@@ -36,13 +36,13 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     const [user] = await db.select().from(users).where(eq(users.email, email));
 
     if (!user) {
-      return { status: 401, body: "User does not exists" };
+      return error(401, { message: "User does not exist" });
     }
 
     const passwordMatch = await Bun.password.verify(password, user.password);
 
     if (!passwordMatch) {
-      return { status: 401, body: "Invalid password" };
+      return error(401, { message: "Invalid password" });
     }
 
     const token = await jwt.sign({ id: user.user_id, email: user.email });
@@ -50,9 +50,11 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     cookie.auth.set({
       value: token,
       httpOnly: true,
-      maxAge: 7 * 86400,
+      maxAge: 7 * 86400, // 7 days
+      sameSite: "none",
+      secure: false,
       path: "/",
     });
 
-    return { message: "Login successful" };
+    return { message: "Login successful", token };
   });
