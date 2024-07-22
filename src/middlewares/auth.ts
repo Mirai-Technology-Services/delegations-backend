@@ -15,7 +15,7 @@ export const authenticateJWT = jwt({
 });
 
 export const jwtMiddleware = {
-  async beforeHandle({ jwt, cookie }: any) {
+  async beforeHandle({ jwt, cookie, store }: any) {
     const token = cookie.auth?.value;
 
     if (!token) {
@@ -29,6 +29,8 @@ export const jwtMiddleware = {
       if (!user.id || !user.email) {
         return error(403, { message: "Invalid token data" });
       }
+
+      store.user = user;
     } catch (err) {
       console.log(err);
       return error(403, { message: "Failed to authenticate token" });

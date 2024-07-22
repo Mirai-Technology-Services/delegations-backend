@@ -1,18 +1,21 @@
 import Elysia from "elysia";
 import db from "../db/db";
 import { car_trips } from "../db/schema";
+import { eq } from "drizzle-orm";
 import { TokenData, authenticateJWT, jwtMiddleware } from "../middlewares/auth";
 
 export const tripsRoutes = new Elysia({ prefix: "/trips" })
-  .use(authenticateJWT)
   .state("user", {} as TokenData)
+  .use(authenticateJWT)
   .guard(jwtMiddleware, (app) =>
     app
-      .get("/", async ({ store }) => {
-        const user = store.user;
-        console.log(user);
-        // Handle the request knowing the user is authenticated
-        return { message: `Welcome, ${user.email}` };
+      .get("/", async ({ store: { user } }) => {
+        const trips = await db
+          .select()
+          .from(car_trips)
+          .where(eq(car_trips.user_id, user.id));
+
+        return { body: trips };
       })
       .post("/", async ({ store, request }) => {
         const user = store.user;
@@ -26,7 +29,6 @@ export const tripsRoutes = new Elysia({ prefix: "/trips" })
           .returning();
 
         return {
-          status: 201,
           body: insertedTrip,
         };
       })
