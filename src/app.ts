@@ -7,7 +7,7 @@ import { logger } from "./logger";
 export const app = new Elysia()
   .use(cors())
   .use(swagger())
-  .use(logger)
+  .use(logger({ logResponse: true, logRequest: true, includeTimestamp: true }))
   .get("/", () => {
     return "Server is running!";
   })
