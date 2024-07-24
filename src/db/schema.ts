@@ -4,7 +4,6 @@ import {
   varchar,
   integer,
   timestamp,
-  date,
 } from "drizzle-orm/pg-core";
 
 // Organisations Table
@@ -43,10 +42,12 @@ export const cars = pgTable("cars", {
 
 // Delegations Table
 export const delegations = pgTable("delegations", {
+  user_id: integer("user_id")
+    .references(() => users.user_id)
+    .notNull(),
   delegation_id: serial("delegation_id").primaryKey(),
-  delegation_date: date("delegation_date").notNull(),
-  description: varchar("description", { length: 255 }).notNull(),
-  diet_count: integer("diet_count").notNull(),
+  description: varchar("description", { length: 255 }),
+  diet_count: integer("diet_count"),
   status: varchar("status", { length: 50 }).default("active").notNull(),
 });
 

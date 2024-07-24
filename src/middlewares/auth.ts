@@ -4,7 +4,7 @@ import { error } from "elysia";
 
 // Define the type for the expected token data
 export type TokenData = {
-  id: string;
+  id: number;
   email: string;
 };
 
