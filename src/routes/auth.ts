@@ -1,14 +1,13 @@
-import jwt from "@elysiajs/jwt";
 import Elysia, { error } from "elysia";
 import { users } from "../db/schema";
 import db from "../db/db";
 import { eq } from "drizzle-orm";
-import { env } from "../env";
+import { jwtConfig } from "../middlewares/auth";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
-  .use(jwt({ secret: env.jwtSecret }))
-  .post("/register", async (ctx) => {
-    const { first_name, last_name, email, password } = await ctx.request.json();
+  .use(jwtConfig)
+  .post("/register", async ({ request }) => {
+    const { first_name, last_name, email, password } = await request.json();
 
     const user = await db.select().from(users).where(eq(users.email, email));
 
@@ -50,7 +49,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     cookie.auth.set({
       value: token,
       httpOnly: true,
-      maxAge: 7 * 86400, // 7 days
+      maxAge: 7 * 86400,
       sameSite: "none",
       secure: false,
       path: "/",
