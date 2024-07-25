@@ -57,14 +57,13 @@ export const trips = pgTable("trips", {
   delegation_id: integer("delegation_id")
     .references(() => delegations.delegation_id)
     .notNull(),
-  trip_type: varchar("trip_type", { length: 50 }).notNull(),
   start_time: timestamp("start_time", { mode: "string" }).notNull(),
-  end_time: timestamp("end_time", { mode: "string" }).notNull(),
+  end_time: timestamp("end_time", { mode: "string" }),
   start_location: varchar("start_location", { length: 255 }).notNull(),
-  end_location: varchar("end_location", { length: 255 }).notNull(),
+  end_location: varchar("end_location", { length: 255 }),
   trip_description: varchar("trip_description", { length: 255 }),
-  meter_start: integer("meter_start").notNull(),
-  meter_end: integer("meter_end").notNull(),
+  start_meter: integer("start_meter").notNull(),
+  end_meter: integer("end_meter"),
   car_id: integer("car_id")
     .references(() => cars.car_id)
     .notNull(),
@@ -76,19 +75,4 @@ export const trips = pgTable("trips", {
     .defaultNow()
     .notNull(),
   status: varchar("status", { length: 50 }).default("active").notNull(),
-});
-
-// Stops Log Table
-export const stops_log = pgTable("stops_log", {
-  id: serial("id").primaryKey(),
-  delegation_id: integer("delegation_id")
-    .references(() => delegations.delegation_id)
-    .notNull(),
-  user_id: integer("user_id")
-    .references(() => users.user_id)
-    .notNull(),
-  location: varchar("location", { length: 255 }).notNull(),
-  meter: integer("meter").notNull(),
-  type: varchar("type", { length: 50 }).notNull(),
-  time: timestamp("time", { mode: "string" }).defaultNow().notNull(),
 });

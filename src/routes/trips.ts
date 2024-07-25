@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import db from "../db/db";
 import { and, eq } from "drizzle-orm";
-import { delegations, stops_log, trips } from "../db/schema";
+import { delegations, trips } from "../db/schema";
 import { jwtValidation } from "../middlewares/auth";
 
 export const tripsRoutes = new Elysia({ prefix: "/trips" })
@@ -22,16 +22,40 @@ export const tripsRoutes = new Elysia({ prefix: "/trips" })
   .post(
     "/start",
     async ({ user, request }) => {
-      const newStop = await request.json();
-      newStop.user_id = user.id;
+      // Fetch the active delegation for the user
+      let activeDelegation = await db
+        .select()
+        .from(delegations)
+        .where(
+          and(
+            eq(delegations.user_id, user.id),
+            eq(delegations.status, "active"),
+          ),
+        )
+        .then((rows) => rows[0]);
 
-      const [insertedStop] = await db
-        .insert(stops_log)
-        .values(newStop)
-        .returning();
+      let message;
+
+      // If no active delegation is found
+      if (!activeDelegation) {
+        [activeDelegation] = await db
+          .insert(delegations)
+          .values({ user_id: user.id, status: "active" })
+          .returning();
+        message = "Trip added to newly created delegation";
+      } else {
+        message = "Trip added to existing delegation";
+      }
+
+      const newTrip = await request.json();
+      newTrip.user_id = user.id;
+      newTrip.delegation_id = activeDelegation.delegation_id;
+
+      const [insertedTrip] = await db.insert(trips).values(newTrip).returning();
 
       return {
-        body: insertedStop,
+        message: message,
+        body: insertedTrip,
       };
     },
     { requireAuth: true },
@@ -40,7 +64,11 @@ export const tripsRoutes = new Elysia({ prefix: "/trips" })
     "/start-form",
     ({ user }) => {
       return {
-        user,
+        body: {
+          delegation_id: "",
+          location: "Home",
+          meter: 42,
+        },
       };
     },
     { requireAuth: true },
