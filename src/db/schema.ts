@@ -75,6 +75,7 @@ export const trips = pgTable("trips", {
   last_updated: timestamp("last_updated", { mode: "string" })
     .defaultNow()
     .notNull(),
+  status: varchar("status", { length: 50 }).default("active").notNull(),
 });
 
 // Stops Log Table

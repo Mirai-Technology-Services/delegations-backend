@@ -16,13 +16,21 @@ export const jwtConfig = jwt({
 export const jwtValidation = (app: Elysia) =>
   app
     .use(jwtConfig)
-    .onBeforeHandle(async ({ cookie }) => {
-      if (!cookie.auth?.value) {
-        return error(401, { message: "No token provided" });
-      }
-    })
+    .use(authPlugin)
     .derive(async ({ jwt, cookie }) => {
       const token = cookie.auth.value;
       const user = (await jwt.verify(token)) as TokenData;
       return { user };
     });
+
+const authPlugin = new Elysia({ name: "authPlugin" }).macro(
+  ({ onBeforeHandle }) => ({
+    requireAuth() {
+      onBeforeHandle(({ cookie }) => {
+        if (!cookie.auth?.value) {
+          return error(401, { message: "No token provided" });
+        }
+      });
+    },
+  }),
+);
