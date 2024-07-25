@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import Elysia, { error } from "elysia";
 import db from "../db/db";
 import { and, eq } from "drizzle-orm";
 import { delegations, trips } from "../db/schema";
@@ -60,6 +60,35 @@ export const tripsRoutes = new Elysia({ prefix: "/trips" })
     },
     { requireAuth: true },
   )
+  .post("/end", async ({ user, request }) => {
+    const endTripData = await request.json();
+
+    const [activeTrip] = await db
+      .select()
+      .from(trips)
+      .where(and(eq(trips.user_id, user.id), eq(trips.status, "active")));
+
+    if (!activeTrip) {
+      error(400, { message: "No active trip found" });
+    }
+
+    const updatedTrip = {
+      ...activeTrip,
+      ...endTripData,
+      status: "completed",
+    };
+
+    const [endedTrip] = await db
+      .update(trips)
+      .set(updatedTrip)
+      .where(eq(trips.trip_id, activeTrip.trip_id))
+      .returning();
+
+    return {
+      message: "Trip ended successfully",
+      body: endedTrip,
+    };
+  })
   .get(
     "/start-form",
     ({ user }) => {
