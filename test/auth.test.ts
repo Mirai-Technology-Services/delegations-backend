@@ -1,18 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { app } from "../src";
 import db from "../src/db/db";
 import { users } from "../src/db/schema";
 import { eq } from "drizzle-orm";
-
-beforeAll(async () => {
-  // Start the server
-});
-
-afterAll(async () => {
-  // Stop the server
-});
+import Elysia from "elysia";
+import { api } from "../src/api";
 
 describe("Auth Routes", () => {
+  const app = new Elysia().use(api);
+
   it("should register a new user", async () => {
     const response = await app
       .handle(
